@@ -13,29 +13,37 @@ const $messages = document.querySelector('#messages')
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const locationTemplate = document.querySelector('#location-template').innerHTML
 
-socket.on('locationMessage',(url)=>{
-    console.log(url)
+//HANDLE LOCATION MESSAGE EVENT
+
+socket.on('locationMessage',(message)=>{
+    console.log(message)
     const html = Mustache.render(locationTemplate,{
-        url
+        url:message.url,
+        createdAt:moment(message.createdAt).format('HH:mm A')
     })
     $messages.insertAdjacentHTML('beforeend',html)
 })
 
+//HANDLE MESSAGE EVENT
+
 socket.on('message',(message)=>{
     console.log(message)
     const html = Mustache.render(messageTemplate,{
-        message
+        message:message.text,
+        createdAt:moment(message.createdAt).format('HH:mm A')
     })
-    $messages.insertAdjacentHTML('beforeend',html)               //ADDS MESSGAES TO THE BOTTOM
+    $messages.insertAdjacentHTML('beforeend',html)                      //ADDS MESSGAES TO THE BOTTOM
 })
 
-$messageForm.addEventListener('submit',(e)=>{
-    e.preventDefault()
+//EMIT A SENDMESSAGE EVENT
 
-    $messageFormButton.setAttribute('disabled','disabled')          //DISABLE BUTTON UNTIL EVENT FINISHED
+$messageForm.addEventListener('submit',(e)=>{
+    e.preventDefault('HH:')
+
+    $messageFormButton.setAttribute('disabled','disabled')              //DISABLE BUTTON UNTIL EVENT FINISHED
     const message = e.target.elements.message.value
     socket.emit('sendMessage',message,(error)=>{
-        $messageFormButton.removeAttribute('disabled')              //ENABLE BUTTON
+        $messageFormButton.removeAttribute('disabled')                  //ENABLE BUTTON
         $messageFormInput.value=''                                      //CLEAR THE FIELD
         $messageFormInput.focus()                                       //REFOCUS FROM BUTTON TO FIELD
         if(error){
@@ -45,7 +53,9 @@ $messageForm.addEventListener('submit',(e)=>{
     })
 })
 
-document.querySelector('#sendlocation').addEventListener('click',()=>{
+//EMIT A SENDLOCATION EVENT
+
+$sendLocationButton.addEventListener('click',()=>{
     if(!navigator.geolocation){
         return alert('Geolocation is not supported by your browser')
     }
