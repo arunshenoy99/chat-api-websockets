@@ -18,6 +18,33 @@ const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 //OPTIONS
 const {username,room}=Qs.parse(location.search.slice(1))
 
+//AUTOSCROLLING FUCNTION
+
+const autoScroll = ()=>{
+    //GET NEW MESSAGE ELEMENT
+    $newMessage = $messages.lastElementChild
+
+    //HEIGHT OF NEW MESSAGE
+    const newMessageStyles = getComputedStyle($newMessage)
+    const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+    const newMessageHeight = $newMessage.offsetHeight + newMessageMargin
+
+    //VISIBLE HEIGHT
+    const visibleHeight = $messages.offsetHeight
+
+    //HEIGHT OF MESSAGES CONTAINER
+
+    const contentHeight = $messages.scrollHeight
+
+    //HOW FAR HAVE I SCROLLED
+
+    const scrollOffset = $messages.scrollTop+visibleHeight
+
+    if(contentHeight-newMessageHeight<=scrollOffset){
+        $messages.scrollTop = $messages.scrollHeight
+    }
+}
+
 //HANDLE LOCATION MESSAGE EVENT
 
 socket.on('locationMessage',(message)=>{
@@ -28,6 +55,7 @@ socket.on('locationMessage',(message)=>{
         createdAt:moment(message.createdAt).format('HH:mm A')
     })
     $messages.insertAdjacentHTML('beforeend',html)
+    autoScroll()
 })
 
 //HANDLE MESSAGE EVENT
@@ -40,6 +68,7 @@ socket.on('message',(message)=>{
         createdAt:moment(message.createdAt).format('HH:mm A')
     })
     $messages.insertAdjacentHTML('beforeend',html)                      //ADDS MESSGAES TO THE BOTTOM
+    autoScroll()
 })
 
 //HANDLE A ROOMDATA EVENT
