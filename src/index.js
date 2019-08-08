@@ -16,14 +16,20 @@ const publicPath = app.use(express.static(path.join(__dirname,'../public')))
 //SETUP SOCKETS
 io.on('connection',(socket)=>{
     console.log('New WebSocket')
+  
 
-    //SEND A WELCOME MESSAGE
+    //HANDLE JOIN
 
-    socket.emit('message',generateMessage('Welcome !'))
+    socket.on('join',({username,room})=>{
+        socket.join(room)
+        //SEND A WELCOME MESSAGE
 
-    //LET USERS KNOW A NEW USER HAS JOINED
+        socket.emit('message',generateMessage('Welcome !'))
 
-    socket.broadcast.emit('message',generateMessage('A new user has joined the chat'))    
+        //LET USERS KNOW A NEW USER HAS JOINED
+
+        socket.broadcast.to(room).emit('message',generateMessage(`${username} has joined`))  
+    })
 
     //HANDLE SENDMESSAGE EVENT
 
