@@ -4,6 +4,7 @@ const socketio = require('socket.io')
 const http = require('http')
 const Filter = require('bad-words')
 const {generateMessage,generateLocationMessage}= require('./utils/messages')
+const {addUser,removeUser,getUser,getUsersInRoom} = require('./utils/users')
 
 //SETUP SERVER WITH SOCKET
 const app = express()
@@ -15,20 +16,27 @@ const publicPath = app.use(express.static(path.join(__dirname,'../public')))
 
 //SETUP SOCKETS
 io.on('connection',(socket)=>{
-    console.log('New WebSocket')
   
 
     //HANDLE JOIN
 
-    socket.on('join',({username,room})=>{
-        socket.join(room)
+    socket.on('join',({username,room},callback)=>{
+        //JOIN USER TO ROOM
+        const {error,user}=addUser({id:socket.id,username,room})
+        if(error){
+            return callback(error)
+        }
+
+
+        socket.join(user.room)
         //SEND A WELCOME MESSAGE
 
         socket.emit('message',generateMessage('Welcome !'))
 
         //LET USERS KNOW A NEW USER HAS JOINED
 
-        socket.broadcast.to(room).emit('message',generateMessage(`${username} has joined`))  
+        socket.broadcast.to(user.room).emit('message',generateMessage(`${user.username} has joined`))  
+        callback()
     })
 
     //HANDLE SENDMESSAGE EVENT
@@ -55,7 +63,11 @@ io.on('connection',(socket)=>{
     //LET USERS KNOW THAT A USER HAS LEFT THE CHAT
 
     socket.on('disconnect',()=>{
-        io.emit('message',generateMessage('A user has left the chat'))
+        const user= removeUser(socket.id)
+        if(user){
+            io.to(user.room).emit('message',generateMessage(`${user.username} has left`))
+        }
+        
     })
 
     //HANDLE THE SEND LOCATION EVENT
