@@ -12,6 +12,7 @@ const $messages = document.querySelector('#messages')
 
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const locationTemplate = document.querySelector('#location-template').innerHTML
+const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 
 //OPTIONS
@@ -22,6 +23,7 @@ const {username,room}=Qs.parse(location.search.slice(1))
 socket.on('locationMessage',(message)=>{
     console.log(message)
     const html = Mustache.render(locationTemplate,{
+        username:message.username,
         url:message.url,
         createdAt:moment(message.createdAt).format('HH:mm A')
     })
@@ -33,10 +35,20 @@ socket.on('locationMessage',(message)=>{
 socket.on('message',(message)=>{
     console.log(message)
     const html = Mustache.render(messageTemplate,{
+        username:message.username,
         message:message.text,
         createdAt:moment(message.createdAt).format('HH:mm A')
     })
     $messages.insertAdjacentHTML('beforeend',html)                      //ADDS MESSGAES TO THE BOTTOM
+})
+
+//HANDLE A ROOMDATA EVENT
+
+socket.on('roomData',({room,users})=>{
+    const html=Mustache.render(sidebarTemplate,{
+        room,users
+    })
+    document.querySelector('#sidebar').innerHTML=html
 })
 
 //EMIT A SENDMESSAGE EVENT

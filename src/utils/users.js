@@ -53,7 +53,7 @@ const getUser = (id)=>{
             error:'No user found'
         }
     }
-    return user
+    return foundUser
 }
 
 //GET USERS IN ROOM
